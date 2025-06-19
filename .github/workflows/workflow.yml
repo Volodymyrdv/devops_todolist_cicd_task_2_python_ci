@@ -16,11 +16,30 @@ jobs:
         working-directory: ./src
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v5
         with:
           python-version: '${{env.PYTHON_VERSION}}'
-      - run: |
+      - name: Install Dependencies
+        run: |
           python -m pip install --upgrade pip
           pip install flake8 pytest pytest-cov
           pip install -r requirements.txt
+      - name: Run tests with coverage
+        run: |
+          pytest -v --cov=. --cov-report=term-missing
+      - name: Check code style
+        run: |
+          cd ../
+          flake8 . --show-source --statistics
+      - name: Check Complexity code
+        run: |
+          cd ../
+          flake8 . --statistics --max-complexity=10 --exit-zero
+      - name: Upload Python code as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifact
+          path: src/**/*.py
